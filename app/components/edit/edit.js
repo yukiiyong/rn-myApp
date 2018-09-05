@@ -13,9 +13,12 @@ import config from '../../api/config'
 import {
   StyleSheet,
   Text,
+  TextInput,
   View,
   Dimensions,
   Alert,
+  Button,
+  Modal,
   AsyncStorage,
   TouchableOpacity
 } from 'react-native';
@@ -66,6 +69,7 @@ const defaultState = {
   //audio
   audioPath: AudioUtils.DocumentDirectoryPath + 'mine.aac',
   audioName: 'mine.aac',
+  audioPlaying: false,
   counting: false,
   recording: false,
   recordingDone: false,
@@ -79,7 +83,11 @@ const defaultState = {
   videoId: '',
   audioId: '',
   video: null,
-  audio: null
+  audio: null,
+
+  willPublish: false,
+  publishing: false,
+  publishProgress: 0
 }
 export default class Edit extends Component {
   constructor() {
@@ -110,8 +118,7 @@ export default class Edit extends Component {
           }
         })
   }
-  toggleModal(bool) {
-    const visible = bool ? true : false
+  _setModalVisible(visible) {
     this.setState({
       modalVisible: visible
     })
@@ -200,7 +207,7 @@ export default class Edit extends Component {
                 'uri': uri,
                 'name': key
               })
-              console.log(body)
+
               this._upload(body, 'video')
             }
           })
@@ -254,7 +261,6 @@ export default class Edit extends Component {
         state[type+'UploadProgress'] = 0
         state[type] = response
         this.setState(state)
-
         //把上传到云空间的video信息传到后台保存
 
         const updateUrl = config.api.base + config.api[type]
@@ -271,6 +277,10 @@ export default class Edit extends Component {
             if(data && data.success) {
               let mediaState = {}
               mediaState[type + 'Id'] = data.data
+              if(type === 'audio') {
+                this._setModalVisible(true)
+                mediaState.willPublish = true
+              }
               this.setState(mediaState)
             }
           })
@@ -289,10 +299,10 @@ export default class Edit extends Component {
       xhr.upload.onprogress = ((event) => {
         if(event.lengthComputable) {
           var progress = Number((event.loaded / event.total).toFixed(2))
-
-          this.setState({
-            videoUploadProgress: progress
-          })
+          var progressName = type + 'UploadProgress'
+          const state = {}
+          state[type + 'UploadProgress'] = progress
+          this.setState(state)
         }
       })
     }
@@ -317,7 +327,7 @@ export default class Edit extends Component {
         recordingDone: true
       })
       AudioRecorder.stopRecording()
-    }  
+    }   
   }
   _record() {
     AudioRecorder.startRecording()
@@ -330,7 +340,7 @@ export default class Edit extends Component {
     this.refs.videoPlayer.seek(0)
   }
   _counting() {
-    if(!this.state.counting || !this.state.recording) {
+    if(!this.state.counting && !this.state.recording && !this.state.audioPlaying) {
       this.setState({
         counting: true
       })
@@ -348,7 +358,7 @@ export default class Edit extends Component {
       videoProgress: 0
     })
 
-    AudioRecorder.playingRecord()
+    AudioRecorder.playRecording()
     this.refs.videoPlayer.seek(0)
   }
   _submit() {
@@ -369,16 +379,17 @@ export default class Edit extends Component {
         .then((data) => {
           if(data && data.success) {
             this.setState({
-              publishProgress: data.data.finish
+              publishProgress: data.data.finish / 100
             })
+            console.log(data.data.finish)
             if(data.data.finish === 100) {
               clearInterval(submitInterval)             
+              this._setModalVisible(false)
               var submitTimeout = setTimeout(() => {
-                this._closeModal()
                 let state = Object.assign({}, defaultState)
                 this.setState(state)
-                clearTimeout(submitTimeout)
                 Alert.alert('视频发布成功')
+                clearTimeout(submitTimeout)
               }, 1000)
             } else {
               this._checkSubmit()
@@ -395,7 +406,7 @@ export default class Edit extends Component {
   _checkSubmit() {
     submitInterval = setInterval(() => {
       this._submit()
-    }, 1000)
+    }, 2000)
   }
   render() {
     return (
@@ -525,14 +536,14 @@ export default class Edit extends Component {
             <View style={styles.modalContainer} >
               <Icon style={styles.closeIcon}
                     name='ios-close-outline'
-                    onPress={this._closeModal.bind(this)} />
+                    onPress={() => {this._setModalVisible(false)}} />
               <View style={styles.fieldsBox} >
                 {
-                  this.state.publishing ?
+                  this.state.audioUploaded && !this.state.publishing ?
                     <TextInput style={styles.inputField}
                                 autoCapitalize={'none'}
                                 autoCorrect={false}
-                                defaultValue={'请输入一个标题'}
+                                placeholder='请输入一个标题'
                                 onChangeValue={(text) => {
                                   this.seState({
                                     title: text
@@ -543,26 +554,31 @@ export default class Edit extends Component {
               </View>
               {
                  this.state.publishing ? 
-                  <View style={style.progressBox} >
+                  <View style={styles.progressBox} >
                   {
                     this.state.willPublish ?
                       <Text style={styles.loadingText} >正在为您生成视频</Text>
-                    : this.state.publishing && <Text style={styles.loadingText} >正在上传视频</Text>
+                    : null
                   }
-                      <Progress.Bar progress={this.state.publishProgress}
-                                    size={20}
-                                    color={'#800002'} 
-                                    showsText={true} />
+                  {
+                    this.state.publishing ? <Text style={styles.loadingText} >正在上传视频</Text> : null
+                  }
+                      <Progress.Bar style={styles.progressBar}
+                                    progress={this.state.publishProgress}
+                                    color={'#800002'}  />
+                      <Text>{this.state.publishProgress * 100}%</Text>
                   </View>
                 : null
               }
-              <View style={styles.submitBtn} >
               {
                 this.state.audioUploaded && !this.state.publishing ?
-                  <Button onPress={this._submit.bind(this)}
+                  <View style={styles.submitBtn} >
+                    <Button onPress={this._submit.bind(this)}  
+                            color='#fff'
+                            title='提交' />
+                  </View>
                 : null
               }
-              </View>
             </View>
           </Modal>
         </View>       
@@ -746,30 +762,37 @@ const styles = StyleSheet.create({
     borderColor: '#800002'
   },
   modalContainer: {
-    flex: 1,
-    width: width - 40,
-    justifyContent: 'center',
+    width: width,
+    height: height,
+    paddingTop: 120,
     alignItems: 'center',
-    paddingTop: 50,
     backgroundColor: '#fff'
   },
   closeIcon: {
     position: 'absolute',
-    right: 50,
+    right: 30,
     top: 40,
-    fontSize: 20,
+    fontSize: 50,
     color: '#666'
   },
   fieldsBox: {
     width: width - 40,
     height: 30,
     borderBottomWidth: 1,
-    borderColor: '#333',
-    fontSize: 14,
-    paddingLeft: 8,
+    borderColor: '#333'
   },
   inputField: {
-    flex: 1
+    flex: 1,
+    fontSize: 14,
+    paddingLeft: 10,
+    color: '#333'
+  },
+  titleText: {
+    width: width - 40,
+    height: 30,
+    fontSize: 14,
+    paddingLeft: 10,
+    color: '#333'
   },
   progressBox: {
     marginTop: 20,
@@ -789,9 +812,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: width - 40,
     height: 30,
-    textAlign: 'center',
-    color: '#fff',
-    backgroundColor: '#800002',
-    fontSize: 16
+    backgroundColor: '#800002'
+  },
+  progressBar: {
+    width: width - 40,
+    height: 5
   }
 });

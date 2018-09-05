@@ -50,7 +50,7 @@ export default class VideoItem extends Component {
           <Text style={styles.title}>{row.title}</Text>
           <View style={styles.imageWrapper}>
             <Image
-              source={{uri: row.thumb}}
+              source={{uri: config.qiniu.video + row.qiniu_thumb}}
               style={styles.thumb} 
             ></Image>
             <Icon 

@@ -3,7 +3,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video'
 import CommentList from '../commentList/commentList'
 import CommonHeader from '../commonHeader/commonHeader'
-
+import config feom '../../api/config'
 import {
   StyleSheet,
   Text,
@@ -125,7 +125,7 @@ export default class VideoDetail extends Component {
           <Video 
             ref='videoPlayer'
             style={styles.video}
-            source={{uri: data.video}}
+            source={{uri: config.qiniu.video + data.qiniu_video}}
             muted={this.state.muted}
             volume={5}
             paused={this.state.paused}
