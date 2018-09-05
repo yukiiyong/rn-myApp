@@ -14,9 +14,7 @@ import {
   Dimensions
 } from 'react-native';
 const width = Dimensions.get('window').width;
-let cached = {
-  row: {}
-}
+
 export default class VideoItem extends Component {
   constructor(props) {
     super(props)
@@ -26,12 +24,20 @@ export default class VideoItem extends Component {
       isFavorite: false
     }
   }
+  componentWillMount() {
+    let isFavorite = this.state.row.favorite.indexOf(this.state.user._id) === -1 ? false : true
+    this.setState({
+      isFavorite: isFavorite
+    })
+  }
   toggleFavorite() {
     const row = this.state.row
     const votesUrl = config.api.base + config.api.votes
-    const isFavorite = !this.state.isFavorite
+    isFavorite = !this.state.isFavorite
+    const user = this.state.user
+
     const body = {
-      accessToken: this.state.user.accessToken,
+      accessToken: user.accessToken,
       id: row._id,
       favorite: isFavorite
     }
@@ -39,9 +45,9 @@ export default class VideoItem extends Component {
       .then((data) => {
         if(data && data.success) {
           this.setState({
-            row: data.data
-          })        
-          console.log(data)
+            row: data.data,
+            isFavorite: isFavorite
+          })      
         }
       }).catch((err) => {
         console.log(err)
@@ -50,7 +56,7 @@ export default class VideoItem extends Component {
 
   render() {
     const row = this.state.row
-    const isFavorite = this.state.user.accessToken, row.favorite
+    
     return (
       <TouchableHighlight onPress={this.props.onSelect.bind(this)} >
         <View style={styles.item}>
@@ -68,10 +74,10 @@ export default class VideoItem extends Component {
           <View style={styles.itemFooter}>
             <View style={styles.handleBox}>
               <Icon 
-                name={row.isFavorite ? 'ios-heart' : 'ios-heart-outline'}
+                name={this.state.isFavorite ? 'ios-heart' : 'ios-heart-outline'}
                 size={28}
-                style={[styles.handleIcon, row.isFavorite ? styles.isFavorite : null]} 
-                onPress={this.toggleFavorite.bind(this)}
+                style={[styles.handleIcon, this.state.isFavorite ? styles.isFavorite : null]} 
+                onPress={() => {this.toggleFavorite()}}
               />
               <Text style={styles.handleText}>喜欢{row.favorite_total}</Text>
             </View>

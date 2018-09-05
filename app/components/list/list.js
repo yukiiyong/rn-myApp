@@ -103,7 +103,7 @@ export default class List extends Component {
           if(cached.totalnum === 0) {
             cached.list = []            
           } else {
-            cached.list = data.data
+            cached.list = cached.list.concat(data.data)
           }
           this.setState({
             dataSource: this.state.dataSource.cloneWithRows(cached.list),
