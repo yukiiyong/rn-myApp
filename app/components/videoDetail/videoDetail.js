@@ -3,7 +3,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video'
 import CommentList from '../commentList/commentList'
 import CommonHeader from '../commonHeader/commonHeader'
-import config feom '../../api/config'
+import config from '../../api/config'
 import {
   StyleSheet,
   Text,

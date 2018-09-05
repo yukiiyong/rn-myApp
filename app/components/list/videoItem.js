@@ -22,28 +22,35 @@ export default class VideoItem extends Component {
     super(props)
     this.state = {
       row: this.props.row,
-      user: this.props.user
+      user: this.props.user,
+      isFavorite: false
     }
   }
-
   toggleFavorite() {
     const row = this.state.row
-    const votesUrl = config.api.base + config.api.votesUrl
-    row.isFavorite = !row.isFavorite
+    const votesUrl = config.api.base + config.api.votes
+    const isFavorite = !this.state.isFavorite
     const body = {
       accessToken: this.state.user.accessToken,
       id: row._id,
-      favorite: row.isFavorite
+      favorite: isFavorite
     }
-    this.setState({
-      row: row
-    })
-    console.log(this.state.row.isFavorite)
+    request.post(votesUrl, body)
+      .then((data) => {
+        if(data && data.success) {
+          this.setState({
+            row: data.data
+          })        
+          console.log(data)
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
   }
 
   render() {
-    let row = this.state.row
-    console.log(row)
+    const row = this.state.row
+    const isFavorite = this.state.user.accessToken, row.favorite
     return (
       <TouchableHighlight onPress={this.props.onSelect.bind(this)} >
         <View style={styles.item}>
@@ -66,7 +73,7 @@ export default class VideoItem extends Component {
                 style={[styles.handleIcon, row.isFavorite ? styles.isFavorite : null]} 
                 onPress={this.toggleFavorite.bind(this)}
               />
-              <Text style={styles.handleText}>喜欢</Text>
+              <Text style={styles.handleText}>喜欢{row.favorite_total}</Text>
             </View>
             <View style={styles.handleBox}>
               <Icon 
