@@ -11,6 +11,7 @@ import {
   TouchableHighlight,
   TouchableOpacity,
   ActivityIndicator,
+  AsyncStorage,
   View,
   TextInput,
   ListView,
@@ -34,37 +35,53 @@ export default class CommentList extends Component {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state={
       dataSource: ds.cloneWithRows([]),
+      isRefreshing: false,
       isLoadingTail:false,
       data: this.props.data,
+      user: {},
       modalVisible: false,
       isSending: false,
       content: ''
     }
   }
   componentDidMount() {
-     setTimeout(() => {
-       this._getCommentList();
-     },200)
-
+    AsyncStorage.getItem('user')
+      .then((data) => {
+        if(data) {
+          var user = JSON.parse(data)
+          if(user && user.accessToken) {
+            this.setState({
+              user:user
+            },() => {
+              this._getCommentList()
+            })
+          }
+        }
+      })
   }
   _getCommentList() {
+    if(this.state.isRefreshing) {
+      return
+    }
     cached.page = 1
-
+    this.setState({
+      isRefreshing: true
+    })
     request.get(config.api.base+config.api.comments, {
-      accessToken:'123456',
+      accessToken: this.state.user.accessToken,
       page: cached.page,
-      videoId: '123456'
+      creationId: this.state.data._id
     })
       .then((data) => {
-        if(data.success) {
+        if(data && data.success) {
+          console.log(data)
           cached.list = data.data
-          cached.totalnum = data.totalnum
+          cached.totalnum = data.total
           this.setState({
             dataSource: this.state.dataSource.cloneWithRows(cached.list),
             isRefreshing: false
           })
         }
-        this._checkMore(data)
       })
       .catch((error) => {
         console.warn('error '+error)
@@ -78,18 +95,19 @@ export default class CommentList extends Component {
     })
 
     request.get(config.api.base + config.api.comments, {
-      accessToken: '123456',
+      accessToken: this.state.user.accessToken,
+      creationId: this.state.data._id,
       page: cached.page
     })
-      .then(data => {
-        if(data.success) {
+      .then((data) => {
+        if(data && data.success) {
           cached.list = cached.list.concat(data.data)
+          cached.totalnum = data.total
           this.setState({
             dataSource: this.state.dataSource.cloneWithRows(cached.list),
             isLoadingTail: false
           })    
         }
-        this._checkMore(data)
       })
       .catch((error) => {
         console.log('error'+error)
@@ -120,25 +138,26 @@ export default class CommentList extends Component {
     }, () => {
       const url = config.api.base + config.api.comments
       const body = {
-        accessToken: '123456',
-        videoId: '123',
-        content: this.state.content
+        accessToken: this.state.user.accessToken,
+        comment:{
+          creation: this.state.data._id,
+          content: this.state.content
+        }
       }
-
+      console.log(this.state.data)
       request.post(url,body)
         .then((data) => {
           if(data && data.success) {
+            console.log(data)
             var content = this.state.content
             let item ={
-              replyBy: {
-                nickname: 'myName',
-                avatar: 'http://dummyimage.com/640x640/f27985)'
-              },
+              replyBy: this.state.user,
               content: content
             }
             let items = [item].concat(cached.list)
             cached.list = items
             cached.totalnum += 1
+
             this.setState({
               content: '',
               dataSource: this.state.dataSource.cloneWithRows(items),

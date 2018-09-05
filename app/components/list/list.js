@@ -49,7 +49,7 @@ export default class List extends Component {
       })
   }
   _getVideoList() {
-    if(this.state.refreshing) {return }
+    if(this.state.isRefreshing) {return }
     cached.page = 1
     this.setState({
       isRefreshing: true
