@@ -149,7 +149,7 @@ export default class Account extends Component {
     xhr.open('POST', url)
     xhr.onload = () => {
       if(xhr.status !== 200) {
-        Alert.alert('请求失败') 
+        Alert.alert('请求失败 ') 
         console.log(xhr.responseText)
         return 
       }
@@ -210,6 +210,7 @@ export default class Account extends Component {
           }
           const userData = data.data
           if(userData && userData.accessToken) {
+            console.log(userData)
             this.setState({
               user: userData
             }, () => {
