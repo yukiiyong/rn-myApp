@@ -57,7 +57,6 @@ const defaultState = {
   ended: false,
 
   //playing
-  videoPlaying: false,
   currentTime: 0,
   totalTime: 0,
   videoProgress: 0,
@@ -124,21 +123,6 @@ export default class Edit extends Component {
       modalVisible: visible
     })
   }
-  _toggleVideoPlaying(state) {
-    let rate = state ?  1 : 0
-    let paused = !state
-    if(this.state.videoProgress === 1 && state) {
-      this.refs.videoPlayer.seek(0)
-      return
-    }
-    console.log('paused',paused)
-    console.log('rate',rate)
-    this.setState({
-      rate: rate,
-      paused: paused,
-      videoPlaying: state
-    })
-  }
   _getToken(body) {
     //获取token，参数为body，后台判断获取七牛或cloudinary
     //cloudinary body 为accessToken,type,timestamp
@@ -199,7 +183,7 @@ export default class Edit extends Component {
         const body = {
           accessToken: this.state.user.accessToken,
           type: 'video',
-          timestamp: timestamp
+          cloud: 'qiniu'
         }
         //重新设置state
         const state = Object.assign({}, defaultState)
@@ -216,12 +200,8 @@ export default class Edit extends Component {
               //组建body异步上传到qiniu 
               var body = new FormData()
 
-              body.append('signature', token)
-              body.append('folder', 'video')
-              body.append('tags', 'app,video')
-              body.append('timestamp', timestamp)
-              body.append('resource_type', 'video')
-              body.append('api_key', config.cloudinary.api_key)
+              body.append('token', token)
+              body.append('key', key)
               body.append('file', {
                 'type': 'video/mp4', 
                 'uri': uri,
@@ -241,8 +221,7 @@ export default class Edit extends Component {
     if(type === 'audio') {
       url = config.cloudinary.video
     } else if(type === 'video') {
-      url = config.cloudinary.video
-      // url = config.qiniu.upload1
+      url = config.qiniu.upload1
     }
 
     let state = {}
@@ -283,6 +262,7 @@ export default class Edit extends Component {
         state[type] = response
         this.setState(state)
         //把上传到云空间的video信息传到后台保存
+
         const updateUrl = config.api.base + config.api[type]
         let postBody = {
           accessToken: this.state.user.accessToken
@@ -295,17 +275,12 @@ export default class Edit extends Component {
 
         request.post(updateUrl, postBody)
           .then((data) => {
-              console.log(data)
             if(data && data.success) {
               let mediaState = {}
               mediaState[type + 'Id'] = data.data
               if(type === 'audio') {
                 this._setModalVisible(true)
-
                 mediaState.willPublish = true
-              } else if(type === 'video') {
-                console.log('videoUploaded')
-                this.refs.videoPlayer.seek(0)
               }
               this.setState(mediaState)
             }
@@ -335,7 +310,7 @@ export default class Edit extends Component {
     xhr.send(body)
   }
   
-  _onProgress(data) {
+   _onProgress(data) {
     let currentTime = Number(data.currentTime.toFixed(2))
     let totalTime = data.playableDuration
     let progress = Number((currentTime / totalTime).toFixed(2)) 
@@ -347,19 +322,53 @@ export default class Edit extends Component {
     })
   }
   _onEnd() {
-    this.setState({
-      videoProgress: 1,
-      ended: true
-    })  
+    if(this.state.recording) {
+      this.setState({
+        recording: false,
+        videoProgress: 1,
+        recordingDone: true
+      })
+      AudioRecorder.stopRecording()
+    }   
   }
-  _publish() {
-    this._setModalVisible(true)
+  _record() {
+    AudioRecorder.startRecording()
+    this.setState({
+      recording: true,
+      counting: false,
+      recordingDone: false,
+      videoProgress: 0
+    })
+    this.refs.videoPlayer.seek(0)
+  }
+  _counting() {
+    if(!this.state.counting && !this.state.recording && !this.state.audioPlaying) {
+      this.setState({
+        counting: true
+      })
+      this.refs.videoPlayer.seek(this.state.totalTime - 0.01)
+    }   
+  }
+  _preview() {
+    console.log('playing audio')
+    console.log(AudioRecorder)
+    if(this.state.audioPlaying) {
+      AudioRecorder.stopPlaying()
+    }
+    this.setState({
+      audioPlaying: true,
+      videoProgress: 0
+    })
+
+    AudioRecorder.playRecording()
+    this.refs.videoPlayer.seek(0)
   }
   _submit() {
     const submitUrl = config.api.base + config.api.creations
     const user = this.state.user
     let body = {
       videoId: this.state.videoId,
+      audioId: this.state.audioId,
       title: this.state.title
     }
     if(user && user.accessToken) {
@@ -368,7 +377,6 @@ export default class Edit extends Component {
       this.setState({
         publishing: true
       })
-      console.log(this.state.title)
       request.post(submitUrl, body)
         .then((data) => {
           if(data && data.success) {
@@ -406,7 +414,7 @@ export default class Edit extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.header} >
-          <Text style={styles.headerTitle} >来分享乐趣</Text>
+          <Text style={styles.headerTitle} >一起来配音吧</Text>
           {
             this.state.previewVideo && this.state.videoUploaded ? 
               <TouchableOpacity style={styles.headerRight} onPress={this._pickVideo.bind(this)} >
@@ -439,38 +447,86 @@ export default class Edit extends Component {
                       <View ref='progressBtn' style={[styles.progressBtnWrapper, {transform: [{translateX: this.state.videoUploadProgress * width}]} ]}>
                         <View style={styles.progressBtn} ></View>
                       </View>
-                      <Text style={styles.progressTip} >正在上传视频，已完成{(this.state.videoUploadProgress * 100).toFixed(2)}% </Text>
+                      <Text style={styles.progressTip} >正在生成静音视频，已完成{(this.state.videoUploadProgress * 100).toFixed(2)}% </Text>
                     </View>  
                   : null
                 }
                 {
-                  //视频播放控制
-                  this.state.videoUploaded ?
-                  <TouchableOpacity style={styles.videoControl} onPress={() => {this._toggleVideoPlaying(false)}}>
-                    {this.state.paused && <Icon name="ios-play" style={styles.pauseBtn} onPress={() => {this._toggleVideoPlaying(true)}} />}
-                  </TouchableOpacity> 
+                  this.state.audioPlaying || this.state.recording ?
+                    <View style={styles.progressBar} >
+                      <View ref="progress" style={[styles.progress, {width: width * this.state.videoProgress}]} ></View>
+                      {
+                        this.state.recording ?
+                          <Text style={styles.progressTip} >录制声音中...</Text>
+                        : null
+                      }
+                    </View> 
                   : null
                 }
                 {
-                  //视频进度控制
-                  this.state.videoUploaded && 
-                  <View style={styles.progressBar}>
-                    <View ref="progress" style={[styles.progress, {width: width * this.state.videoProgress}]} ></View>
-                  </View>
+                  this.state.recordingDone ? 
+                    <TouchableOpacity style={styles.previewBox} onPress={this._preview.bind(this)} >
+                      <Icon name='ios-play' style={styles.previewIcon} />
+                      <Text style={styles.previewText} >预览</Text>
+                    </TouchableOpacity>
+                  : null
                 }
-             </View>
+                
+              </View>
             : 
               <TouchableOpacity style={styles.uploadContainer} onPress={() => {this._pickVideo()}} >
-                  <Icon style={styles.uploadIcon} name='logo-octocat' size={35} />
-                  <Text style={styles.uploadText} >开始分享乐趣</Text>
+                  <Icon style={styles.uploadIcon} name='ios-microphone' size={35} />
+                  <Text style={styles.uploadText} >点击以上传视频</Text>
                   <Text style={styles.uploadDesc} >建议视频不超过30秒</Text>
               </TouchableOpacity>
           }
           {
-            //视频上传完成触发下一步按钮
             this.state.videoUploaded ? 
-              <View style={styles.uploadReadyBox} >
-                <Text style={styles.uploadReadyText} onPress={() => {this._publish()}} >下一步</Text>
+               <View style={styles.recordBox} >
+                <View style={[styles.recordIconBox, (this.state.recording || this.state.audioPlaying) && styles.recordOn]} >
+                {
+                  this.state.counting && !this.state.recording ? 
+                    <CountDownText
+                      style={styles.countDown}
+                      countType='seconds' // 计时类型：seconds / date
+                      auto={true} // 自动开始
+                      afterEnd={() => {
+                        this._record()
+                      }} // 结束回调
+                      timeLeft={3} // 正向计时 时间起点为0秒
+                      step={-1} // 计时步长，以秒为单位，正数则为正计时，负数为倒计时
+                      startText='3' // 开始的文本
+                      endText='Go' // 结束的文本
+                      intervalText={(sec) => {
+                        if(sec === 0 ) {
+                          return 'Go'
+                        }
+                        return sec
+                      }} // 定时的文本回调
+                   />  
+                  : 
+                  <TouchableOpacity style={styles.recordIconContainer} onPress={this._counting.bind(this)} >
+                    <Icon name='ios-mic' size={40} style={styles.recordIcon}  />                        
+                  </TouchableOpacity>
+                }
+                </View>
+              </View>
+            : null
+          }
+          {
+            //音频上传进度显示 和音频上传到下一步触发按钮
+            this.state.recordingDone && this.state.videoUploaded?
+              <View style={styles.audioUploadBox} >
+                {
+                  this.state.audioUploading  ?
+                    <Progress.Circle 
+                      size={60}
+                      showsText={true}
+                      progress={this.state.audioUploadProgress}
+                      color={'#800002'} />
+                  :
+                    !this.state.audioUploaded && <Text style={styles.audioUploadText} onPress={this._uploadAudio.bind(this)} >下一步</Text>
+                }
               </View>
             : null
           }
@@ -478,7 +534,6 @@ export default class Edit extends Component {
           <Modal 
                   animationType='fade'
                   onRequestClose={() => {console.log('modal close')}}
-                  transparent={true}
                   visible={this.state.modalVisible} >
             <View style={styles.modalContainer} >
               <Icon style={styles.closeIcon}
@@ -486,14 +541,13 @@ export default class Edit extends Component {
                     onPress={() => {this._setModalVisible(false)}} />
               <View style={styles.fieldsBox} >
                 {
-                  this.state.videoUploaded && !this.state.publishing ?
+                  this.state.audioUploaded && !this.state.publishing ?
                     <TextInput style={styles.inputField}
                                 autoCapitalize={'none'}
                                 autoCorrect={false}
                                 placeholder='请输入一个标题'
-                                onChangeText={(text) => {
-                                  console.log(text)
-                                  this.setState({
+                                onChangeValue={(text) => {
+                                  this.seState({
                                     title: text
                                   })
                                 }} />
@@ -519,7 +573,7 @@ export default class Edit extends Component {
                 : null
               }
               {
-                this.state.videoUploaded && !this.state.publishing ?
+                this.state.audioUploaded && !this.state.publishing ?
                   <View style={styles.submitBtn} >
                     <Button onPress={this._submit.bind(this)}  
                             color='#fff'
@@ -633,30 +687,6 @@ const styles = StyleSheet.create({
     height: 25,
     paddingTop: 3
   },
-  videoControl: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width,
-    height: height * 0.6,
-    backgroundColor: 'transparent'
-  },
-  pauseBtn: {
-    position: 'absolute',
-    left: width * 0.45,
-    top: width * 0.45,
-    width: 60,
-    height: 60,
-    paddingLeft: 5,
-    paddingTop: 3,
-    textAlign: 'center',
-    borderWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 30,
-    backgroundColor: 'transparent',
-    color: '#800002',
-    fontSize: 50
-  },
   recordBox: {
     width: width,
     marginTop: -20,
@@ -714,14 +744,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff'
   },
-  uploadReadyBox: {
+  audioUploadBox: {
     marginTop: 40,
     width: width,
     height: 60,
     justifyContent: 'center',
     alignItems: 'center'
   },
-  uploadReadyText: {
+  audioUploadText: {
     width: width - 20,
     height: 40,
     padding: 8,
@@ -738,7 +768,7 @@ const styles = StyleSheet.create({
     height: height/2,
     paddingTop: 120,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     borderWidth:1,
     borderColor: '#666'
   },

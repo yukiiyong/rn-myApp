@@ -190,6 +190,7 @@ export default class CommentList extends Component {
   }
   _renderHeader() {
     const data = this.state.data
+    console.log(data)
     return (
       <View style={styles.headerWrapper} > 
         <View key={data.author._id} style={styles.infoBox} >
@@ -199,14 +200,6 @@ export default class CommentList extends Component {
             <Text style={styles.authorNickname} >{data.author.nickname}</Text>
             <Text style={styles.videoTitle} >{data.title}</Text>
           </View>
-        </View>
-        <View style={styles.remarkBox} >
-          <TextInput style={styles.remark} 
-                      multiline={true}
-                      placeholder='喜欢就评论一下'
-                      onFocus={() => {this._setModalVisible(true)}}
-
-          />            
         </View>
         <View style={styles.txtWrapper} >
           <Text style={styles.txt} > 评论列表</Text>
@@ -232,8 +225,9 @@ export default class CommentList extends Component {
 
   render() {
     return (
-      <View >
+      <View style={styles.container} >
         <ListView 
+            style={styles.listView}
             dataSource={this.state.dataSource}
             renderRow={this._renderRow.bind(this)}
             enableEmptySections = {true}
@@ -244,34 +238,24 @@ export default class CommentList extends Component {
             renderFooter={this._renderFooter.bind(this)}
             showsVerticalScrollIndicator = {false}
         /> 
-        <View style={styles.modalContainer} >       
-          <Modal  animationType={'fade'}
-                visible={this.state.modalVisible}
-                onRequestClose={() => {this._setModalVisible(false)}}  >
-          
-            <Icon name='ios-close-outline' 
-                  style={styles.modalCloseBtn}
-                  onPress={() => {this._setModalVisible(false)}} />
-            <View style={styles.remarkBox} >
-              <TextInput style={styles.remark}
-                          multiline= {true}
-                          placeholder= '请留下您的看法'
-                          defaultValue={this.state.content}
-                          onChangeText={(text) => {
-                            this.setState({
-                              content: text
-                            })
-                          }}  
-              />
-              <View style={styles.modalSubmitBtnWrapper}>
-                <Button ref='submitBtn'
-                        color='#fff'
-                        title='评论'
-                        disabled={this.state.isSending}
-                        onPress={this._submit.bind(this)}   />
-              </View>
-            </View>          
-          </Modal>
+        <View style={styles.commentsBox} >
+          <TextInput  ref='remarkInput'
+                      style={styles.remarks}
+                      multiline={false}
+                      placeholder='你有什么精彩意见？'
+                      defaultValue={this.state.content}
+                      onChangeText={(text) => {
+                        this.setState({
+                          content: text
+                        })
+                      }} />
+          <View style={styles.submitBtnWrapper} >
+            <Button ref='submitBtn' 
+                  color='#fff' 
+                  title='评论' 
+                  disabled={this.state.isSending} 
+                  onPress={this._submit.bind(this)} />
+          </View>         
         </View>
       </View>
     )
@@ -279,6 +263,12 @@ export default class CommentList extends Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  listView: {
+    marginBottom: 60
+  },
   loadingContainer: {
     height: 100,
     flexDirection: 'row',
@@ -293,34 +283,37 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#333'
   },
-  remarkBox: {
-    margin: 20
-  },
-  remark: {
-    borderWidth: 1,
-    borderColor: '#333',
-    borderRadius: 4,
+  commentsBox: {
+    position: 'absolute',
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingLeft: 10,
+    paddingRight: 10,
+    width: width,
     height: 60,
-    padding: 5
+    backgroundColor: '#333',
+    overflow: 'hidden'
   },
-  modalContainer: {
-    position: 'relative',
-    flex: 1,
-    alignItems: 'center'
-  },
-  modalSubmitBtnWrapper: {
-    margin: 10,
+  remarks: {
+    width: width * 0.6,
+    height: 36,
+    fontSize: 14,
+    color: '#333',
+    paddingLeft: 5,
+    paddingRight: 10,
     borderWidth: 1,
-    borderRadius: 4,
-    borderColor: '#800002',
-    backgroundColor: '#800002'
+    borderColor: '#666',
+    borderRadius: 6,
+    backgroundColor: '#fff'
   },
-  modalCloseBtn: {
-    paddingTop: 50,
-    paddingRight: 20,
-    textAlign: 'right',
-    fontSize: 50,
-    color: '#800040'
+  submitBtnWrapper: {
+    width: 60,
+    height: 36,
+    backgroundColor: '#800002',
+    borderRadius: 4,
+    overflow: 'hidden'
   },
   loadingMore: {
     margin: 5

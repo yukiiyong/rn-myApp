@@ -153,7 +153,7 @@ export default class List extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <CommonHeader title='视频列表页' /> 
+        <CommonHeader title='主页' /> 
         <ListView 
             dataSource={this.state.dataSource}
             renderRow={this._renderRow.bind(this)}

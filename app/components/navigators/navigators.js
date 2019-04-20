@@ -4,6 +4,8 @@ import Edit from '../edit/edit'
 import Account from '../account/account'
 import Login from '../login/login'
 import UserEdit from '../account/userEdit'
+import Record from '../edit/record'
+import MyVideo from '../account/myVideo'
 import VideoDetail from '../videoDetail/videoDetail'
 import {TabNavigator,StackNavigator,TabBarBottom} from 'react-navigation'
 // import MyTabNavigator from './myTabNavigator'
@@ -42,8 +44,8 @@ export const MyTabNavigators = TabNavigator({
       screen: Edit,
       navigationOptions: ({navigation}) => ({
         tabBarIcon: ({focused, tintColor}) => {
-          const iconName = focused ? 'ios-recording' : 'ios-recording-outline'
-          return (<Icon name={iconName} size={28} style={[styles.tabIcon,{color: tintColor}]} />)
+          const iconName = focused ? 'ios-add-circle' : 'ios-add-circle-outline'
+          return (<Icon name={iconName} size={36} style={[styles.tabIcon,{color: tintColor}]} />)
         }
         
       })
@@ -91,6 +93,9 @@ export const MyStackNavigators = StackNavigator(
     },
     Login: {
       screen: Login,
+    },
+    MyVideo: {
+      screen: MyVideo,
     }
   },
   {

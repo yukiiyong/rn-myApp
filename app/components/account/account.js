@@ -231,6 +231,11 @@ export default class Account extends Component {
         console.log(this.state.user)
       })
   }
+  _toDetail(routeName) {
+    console.log(this.props.navigation)
+    console.log(routeName)
+    this.props.navigation.navigate(routeName)
+  }
   _logout() {
     AsyncStorage.setItem('user', '')
       .then(() => {
@@ -246,7 +251,7 @@ export default class Account extends Component {
     const user = this.state.user
     return (
       <View style={styles.container}>
-        <CommonHeader title='账户页' rightTitle='编辑' rightNavigation='UserEdit' navigation={this.props.navigation} /> 
+        <CommonHeader title='我的账户' rightTitle='编辑' rightNavigation='UserEdit' navigation={this.props.navigation} /> 
         {
           user.avatar ?
             <ImageBackground source={{uri: user.avatar}} style={styles.avatarBackground} >
@@ -285,8 +290,12 @@ export default class Account extends Component {
               <Text style={styles.avatarTip} >上传头像</Text>
             </View>
         }
-        <TouchableOpacity style={styles.logoutWrapper} onPress={this._logout.bind(this)} >
-          <Text style={styles.logout} >注销</Text>
+        <TouchableOpacity style={styles.btnBox} onPress={() => {this._toDetail('MyVideo')}} >
+          <Text style={styles.btnText} >我的发布</Text>
+          <Icon name='ios-arrow-forward' size={28} style={styles.btnRightIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutBox} onPress={this._logout.bind(this)} >
+          <Text style={styles.logoutText} >注销</Text>
         </TouchableOpacity>
       </View>
     )
@@ -345,11 +354,31 @@ const styles = StyleSheet.create({
     color: '#333',
     borderRadius: 15
   },
-  logoutWrapper: {
-    marginLeft: 20,
-    marginRight: 20   
+  btnBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: width,
+    height: 40,
+    paddingLeft: 20,
+    paddingRight: 20,
+    borderBottomWidth: 1,
+    borderColor: '#999',
+    marginBottom: 15
   },
-  logout: {
+  btnText: {
+    fontSize: 20,
+    color: '#333'
+  },
+  btnRightIcon: {
+    color: '#666'
+  },
+  logoutBox: {
+    marginLeft: 20,
+    marginRight: 20,
+    marginBottom: 10   
+  },
+  logoutText: {
     backgroundColor: '#800002',
     textAlign: 'center',
     height: 40,

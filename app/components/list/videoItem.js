@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import config from '../../api/config'
 import request from '../../api/request'
 import {
@@ -60,10 +61,15 @@ export default class VideoItem extends Component {
     return (
       <TouchableHighlight onPress={this.props.onSelect.bind(this)} >
         <View style={styles.item}>
+          <View style={styles.infoBox} >
+            <Image source={{uri: row.author.avatar}} 
+                    style={styles.authorAvatar} ></Image>
+            <Text style={styles.authorName} >{row.author.nickname}</Text>
+          </View>
           <Text style={styles.title}>{row.title}</Text>
           <View style={styles.imageWrapper}>
             <Image
-              source={{uri: config.qiniu.video + row.qiniu_thumb}}
+              source={{uri: row.cloudinary_thumb}}
               style={styles.thumb} 
             ></Image>
             <Icon 
@@ -82,8 +88,8 @@ export default class VideoItem extends Component {
               <Text style={styles.handleText}>喜欢{row.favorite_total}</Text>
             </View>
             <View style={styles.handleBox}>
-              <Icon 
-                name='ios-chatboxes-outline'
+              <MaterialIcons
+                name='comment-processing-outline'
                 size={28}
                 style={styles.handleIcon} />
               <Text style={styles.handleText}>评论</Text>
@@ -100,6 +106,30 @@ const styles = StyleSheet.create({
     width:width,
     marginBottom: 10,
     backgroundColor: '#fff'
+  },
+  infoBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 40,
+    width: width,
+    paddingLeft: 10,
+    paddingRight: 10,
+    borderBottomWidth: 1,
+    borderColor: '#E6E6E6'
+  },
+  authorAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    overflow: 'hidden',
+    marginRight: 10
+  },
+  authorName: {
+    flex: 1,
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '600'
   },
   imageWrapper: {
     position: 'relative'
@@ -120,14 +150,15 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     borderWidth: 1,
     backgroundColor: 'transparent',
-    paddingTop: 9,
-    paddingBottom: 18,
+    lineHeight: 46,
     textAlign: 'center'
   },
   title: {
-    padding: 10,
     fontSize: 18,
-    color: '#333'
+    color: '#333',
+    height: 26,
+    lineHeight: 26,
+    paddingLeft: 16
   },
   itemFooter: {
     flexDirection: 'row',

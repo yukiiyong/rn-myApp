@@ -44,9 +44,11 @@ export default class VideoDetail extends Component {
       loaded: true,
       error:false
     })
+    console.log(config.cloudinary.baseUrl + '/' + this.state.data.cloudinary_video)
   }
   _onLoadStart() {
     console.log('onLoadStart')
+    console.log(config.cloudinary.baseUrl + '/' + this.state.data.cloudinary_video)
     if(this.state.error) {
       this.setState({
         error: false
@@ -125,7 +127,7 @@ export default class VideoDetail extends Component {
           <Video 
             ref='videoPlayer'
             style={styles.video}
-            source={{uri: config.qiniu.video + data.qiniu_video}}
+            source={{uri: config.cloudinary.baseUrl + data.cloudinary_video}}
             muted={this.state.muted}
             volume={5}
             paused={this.state.paused}
@@ -209,19 +211,19 @@ const styles = StyleSheet.create({
   },
   pauseBtn: {
     position: 'absolute',
-    left: width * 0.45,
-    top: width * 0.25,
-    width: 40,
-    height: 40,
-    fontSize: 36,
+    left:  width * 0.5 - 30,
+    top: width * 0.28 - 30,
+    width: 60,
+    height: 60,
+    fontSize: 50,
     textAlign: 'center',
-    paddingLeft: 4,
-    paddingTop: 2,
+    lineHeight: 60,
     borderWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 20,
-    backgroundColor: 'transparent',
-    color: '#800002'
+    borderColor: '#999',
+    borderRadius: 30,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    color: '#800002',
+    overflow: 'hidden'
   },
   rePlay: {
     position: 'absolute',
