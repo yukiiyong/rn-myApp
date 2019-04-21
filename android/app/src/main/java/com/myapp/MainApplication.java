@@ -6,15 +6,11 @@ import com.facebook.react.ReactApplication;
 import com.rnim.rn.audio.ReactNativeAudioPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
-import com.brentvatne.react.ReactVideoPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
+import com.imagepicker.ImagePickerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
-import com.imagepicker.ImagePickerPackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,10 +29,6 @@ public class MainApplication extends Application implements ReactApplication {
           new MainReactPackage(),
             new ReactNativeAudioPackage(),
             new ReactVideoPackage(),
-            new VectorIconsPackage(),
-            new VectorIconsPackage(),
-            new ReactVideoPackage(),
-            new VectorIconsPackage(),
             new VectorIconsPackage(),
             new ImagePickerPackage()
       );
