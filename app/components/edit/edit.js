@@ -13,6 +13,7 @@ import config from '../../api/config'
 import {
   StyleSheet,
   Text,
+  Platform,
   TextInput,
   View,
   Dimensions,
@@ -24,6 +25,7 @@ import {
 } from 'react-native';
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
+let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
 const VideoPickerOptions = {
   title: '选择视频',
   cancelButtonTitle: '取消',
@@ -522,7 +524,7 @@ export default class Edit extends Component {
                 this.state.videoUploaded && !this.state.publishing ?
                   <View style={styles.submitBtn} >
                     <Button onPress={this._submit.bind(this)}  
-                            color='#fff'
+                            color={btnColor}
                             title='提交' />
                   </View>
                 : null

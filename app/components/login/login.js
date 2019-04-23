@@ -6,6 +6,7 @@ import { NavigationActions } from 'react-navigation'
 import {CountDownText} from 'react-native-sk-countdown'
 import {
   StyleSheet,
+  Platform,
   Text,
   Image,
   ImageBackground,
@@ -22,6 +23,7 @@ const resetAction = NavigationActions.reset({
   index: 0,
   actions: [NavigationActions.navigate({routeName: 'MyTabNavigators'})]
 })
+let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
 export default class Login extends Component {
   constructor(props) {
     super(props)
@@ -110,6 +112,7 @@ export default class Login extends Component {
                    placeholder='请输入您的手机号' 
                    autoCorrect={false}
                    autoCapitalize={'none'}
+                   underlineColorAndroid='transparent'
                    keyboardType='number-pad'
                    onChangeText={(text) => {
                     this.setState({
@@ -124,6 +127,7 @@ export default class Login extends Component {
                        placeholder='请输入验证码' 
                        autoCorrect={false}
                        autoCapitalize={'none'}
+                       underlineColorAndroid='transparent'
                        keyboardType='number-pad'
                        onChangeText={(text) => {
                         this.setState({
@@ -133,7 +137,7 @@ export default class Login extends Component {
               />
               {this.state.countingDone ? 
                 <View style={styles.sendCodeBtn} >
-                  <Button color='#fff'
+                  <Button color={btnColor}
                       onPress={this._sendCode.bind(this)}
                       title='发送验证码' />
                 </View>          
@@ -161,11 +165,11 @@ export default class Login extends Component {
         <View style={styles.sendBtn} >
           {this.state.sendCode ? 
             <Button onPress={this._submit.bind(this)}
-                    color='#fff'
+                    color={btnColor}
                     title='登录' />
           :
             <Button onPress={this._sendCode.bind(this)}
-                    color='#fff'
+                    color={btnColor}
                     title='发送验证码'  />
           }
         </View>

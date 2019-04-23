@@ -6,6 +6,7 @@ import config from '../../api/config'
 import {
   StyleSheet,
   Text,
+  Platform,
   Image,
   ImageBackground,
   TouchableHighlight,
@@ -29,6 +30,7 @@ var cached = {
   isLoadingTail:false,
   totalnum: 0
 }
+let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
 export default class CommentList extends Component {
   constructor(props) {
     super(props);
@@ -251,7 +253,7 @@ export default class CommentList extends Component {
                       }} />
           <View style={styles.submitBtnWrapper} >
             <Button ref='submitBtn' 
-                  color='#fff' 
+                  color={btnColor}
                   title='评论' 
                   disabled={this.state.isSending} 
                   onPress={this._submit.bind(this)} />

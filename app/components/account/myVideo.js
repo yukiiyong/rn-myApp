@@ -231,5 +231,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 46,
     overflow: 'hidden'
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center'
+  },
+  loadingContainer: {
+    marginVertical: 10 
   }
 })

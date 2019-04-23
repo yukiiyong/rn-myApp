@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import {
   View,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -11,27 +12,30 @@ import {
 import request from '../../api/request'
 import config from '../../api/config'
 import CommonHeader from '../commonHeader/commonHeader'
-
+let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
 export default class UserEdit extends Component {
   constructor(props) {
     super(props);
   
     this.state = {
-      user: {}
+      user: {
+        age: 0,
+        gender: 'male',
+        nickname: ''
+      }
     };
   }
   componentDidMount() {
     AsyncStorage.getItem('user')
       .then(data => {
         const user = JSON.parse(data)
-
-        if(user && user.accessToken) {
-          if(!user.age || user.age === 'undefined') {
+        if(!user.age || user.age === 'undefined') {
             user.age = 0
-          }
-          if(!user.gender || user.gender === 'undefined') {
-            user.gender = 'male'
-          }
+        }
+        if(!user.gender || user.gender === 'undefined') {
+          user.gender = 'male'
+        }
+        if(user && user.accessToken) {
           this.setState({
             user: user
           })
@@ -88,6 +92,7 @@ export default class UserEdit extends Component {
                         placeholder='请输入你的昵称'
                         autoCorrect={false}
                         autoCapitalize={'none'}
+                        underlineColorAndroid='transparent'
                         defaultValue={user.nickname}
                         onChangeText={(text) => {
                           this._changeInfo('nickname', text)
@@ -99,6 +104,7 @@ export default class UserEdit extends Component {
                         placeholder='请输入你的性别'
                         autoCorrect={false}
                         autoCapitalize={'none'}
+                        underlineColorAndroid='transparent'                        
                         defaultValue={user.gender}
                         onChangeText={(text) => {
                           this._changeInfo('gender', text)
@@ -110,6 +116,7 @@ export default class UserEdit extends Component {
                         placeholder='请输入你的年龄'
                         autoCorrect={false}
                         autoCapitalize={'none'}
+                        underlineColorAndroid='transparent'
                         keyboardType='number-pad'
                         defaultValue={user.age + ''}
                         onChangeText={(text) => {
@@ -118,7 +125,7 @@ export default class UserEdit extends Component {
           </View>
           <View style={styles.submitBtnWrapper} >
             <Button style={styles.submitBtn}
-                    color= '#fff'
+                    color= {btnColor}
                     title='提交'
                     onPress={this._submit.bind(this)} />
           </View>
@@ -148,8 +155,9 @@ const styles = StyleSheet.create({
   infoValue: {
     flex: 1,
     height: 30,
-    paddingLeft: 5,
-    lineHeight: 24,
+    lineHeight: 30,
+    paddingVertical: 5,
+    paddingTop:0,
     fontSize: 20,
     borderWidth: 1,
     borderColor: '#666',
