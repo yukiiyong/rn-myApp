@@ -30,7 +30,7 @@ var cached = {
   isLoadingTail:false,
   totalnum: 0
 }
-let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
+let btnColor = Platform.OS === 'ios' ? '#fff' : '#800002'
 export default class CommentList extends Component {
   constructor(props) {
     super(props);
@@ -244,6 +244,7 @@ export default class CommentList extends Component {
           <TextInput  ref='remarkInput'
                       style={styles.remarks}
                       multiline={false}
+                      underlineColorAndroid='transparent'
                       placeholder='你有什么精彩意见？'
                       defaultValue={this.state.content}
                       onChangeText={(text) => {
@@ -305,10 +306,19 @@ const styles = StyleSheet.create({
     color: '#333',
     paddingLeft: 5,
     paddingRight: 10,
+    paddingVertical:0,
     borderWidth: 1,
     borderColor: '#666',
     borderRadius: 6,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    Platform.select({
+      'ios': {
+        lineHeight: 36
+      },
+      'android': {
+        textAlignVertical: 'center'
+      }
+    })
   },
   submitBtnWrapper: {
     width: 60,

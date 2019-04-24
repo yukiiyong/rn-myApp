@@ -223,7 +223,15 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: 'rgba(0,0,0,0.3)',
     color: '#800002',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    Platform.select({
+      'ios': {
+        lineHeight: 36
+      },
+      'android': {
+        textAlignVertical: 'center'
+      }
+    })
   },
   rePlay: {
     position: 'absolute',

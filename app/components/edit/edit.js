@@ -25,7 +25,7 @@ import {
 } from 'react-native';
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
-let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
+let btnColor = Platform.OS === 'ios' ? '#fff' : '#800002'
 const VideoPickerOptions = {
   title: '选择视频',
   cancelButtonTitle: '取消',
@@ -492,6 +492,7 @@ export default class Edit extends Component {
                     <TextInput style={styles.inputField}
                                 autoCapitalize={'none'}
                                 autoCorrect={false}
+                                underlineColorAndroid='transparent'
                                 placeholder='请输入一个标题'
                                 onChangeText={(text) => {
                                   console.log(text)
@@ -737,8 +738,11 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: width,
-    height: height/2,
-    paddingTop: 120,
+    // height: height/2,
+    padding: 40,
+    paddingTop: 60,
+    marginTop: 100,
+    alignSelf: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
     borderWidth:1,
@@ -746,8 +750,8 @@ const styles = StyleSheet.create({
   },
   closeIcon: {
     position: 'absolute',
-    right: 30,
-    top: 40,
+    right: 12,
+    top: 2,
     fontSize: 50,
     color: '#666'
   },
@@ -761,6 +765,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     paddingLeft: 10,
+    paddingVertical: 0,
     color: '#333'
   },
   titleText: {
@@ -768,7 +773,7 @@ const styles = StyleSheet.create({
     height: 30,
     fontSize: 14,
     paddingLeft: 10,
-    color: '#333'
+    color: '#333',
   },
   progressBox: {
     marginTop: 20,
@@ -788,7 +793,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: width - 40,
     height: 30,
-    backgroundColor: '#800002'
+    backgroundColor: '#800002',
+    borderRadius: 6,
+    overflow: 'hidden'
   },
   progressBar: {
     width: width - 40,

@@ -10,7 +10,6 @@ import {MyStackNavigators} from './app/components/navigators/navigators'
 import {
   StyleSheet,
   Text,
-  TabBarIOS,
   View,
   AsyncStorage,
   AppRegistry

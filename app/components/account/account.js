@@ -10,6 +10,7 @@ import CommonHeader from '../commonHeader/commonHeader'
 import {
   StyleSheet,
   Text,
+  Platform,
   TouchableOpacity,
   View,
   Image,
@@ -382,9 +383,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#800002',
     textAlign: 'center',
     height: 40,
-    lineHeight: 40, 
     fontSize: 20,
     color: '#fff',
-    borderRadius: 8
+    borderRadius: 8,
+    ...Platform.select({
+      ios: {
+        lineHeight: 40, //lineHeight在android不生效
+      },
+      android: {
+        textAlignVertical: 'center',  //此属性ios不生效
+      }
+    })
   }
 });

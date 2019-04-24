@@ -1,5 +1,5 @@
 ### 介绍
-  使用react-native进行开发, 实现了一个对视频进行重新配音的app
+  使用react-native进行开发, 实现了一个android和ios都能使用的视频分享app
 ### 界面截图
 1. 登录操作 （手机号+验证码）
 2. 查看视频列表，对视频进行点赞，评论和播放控制 
@@ -29,6 +29,7 @@
 * ios发生 Network Failed, 找到App Transport Security Settings中添加Allow Arbitrary Loads，类型为Boolean，并把值设为yes
 * Button 的color属性在ios是设置字体颜色，android是设置背景颜色，所以可以用Platform.os判断平台来设置颜色
 * TextInput 垂直居中 paddingVertical=0。https://www.jianshu.com/p/bab656ec9b1d
+* android上的文本垂直居中可以使用textAlignVertical，ios上的文本垂直居中可以使用lineHeight(此属性android不生效)    
 
 ### 下载运行
 * 拉取资源  git pull https://github.com/yukiiyong/rn-myApp.git

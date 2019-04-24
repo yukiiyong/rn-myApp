@@ -12,7 +12,7 @@ import {
 import request from '../../api/request'
 import config from '../../api/config'
 import CommonHeader from '../commonHeader/commonHeader'
-let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
+let btnColor = Platform.OS === 'ios' ? '#fff' : '#800002'
 export default class UserEdit extends Component {
   constructor(props) {
     super(props);
@@ -29,13 +29,13 @@ export default class UserEdit extends Component {
     AsyncStorage.getItem('user')
       .then(data => {
         const user = JSON.parse(data)
-        if(!user.age || user.age === 'undefined') {
-            user.age = 0
-        }
-        if(!user.gender || user.gender === 'undefined') {
-          user.gender = 'male'
-        }
         if(user && user.accessToken) {
+          if(!user.age || user.age === 'undefined') {
+              user.age = 0
+          }
+          if(!user.gender || user.gender === 'undefined') {
+            user.gender = 'male'
+          }
           this.setState({
             user: user
           })
@@ -155,18 +155,27 @@ const styles = StyleSheet.create({
   infoValue: {
     flex: 1,
     height: 30,
-    lineHeight: 30,
-    paddingVertical: 5,
-    paddingTop:0,
+    paddingLeft: 8,
+    paddingVertical: 0,
     fontSize: 20,
     borderWidth: 1,
     borderColor: '#666',
-    borderRadius: 8
+    borderRadius: 4,
+    ...Platform.select({
+      ios: {
+        lineHeight: 30, //lineHeight在android不生效
+      },
+      android: {
+        textAlignVertical: 'center',  //此属性ios不生效
+      }
+    })
   },
   submitBtnWrapper: {
+    borderRadius: 8,
     backgroundColor: '#800002',
+    overflow: 'hidden'
   },
-  submitBtn: {
-    borderRadius: 8
+  submitBtn: {    
+    overflow: 'hidden'
   }
 })

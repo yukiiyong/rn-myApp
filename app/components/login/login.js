@@ -23,7 +23,7 @@ const resetAction = NavigationActions.reset({
   index: 0,
   actions: [NavigationActions.navigate({routeName: 'MyTabNavigators'})]
 })
-let btnColor = Platform.os === 'ios' ? '#fff' : '#800002'
+let btnColor = Platform.OS === 'ios' ? '#fff' : '#800002'
 export default class Login extends Component {
   constructor(props) {
     super(props)
@@ -36,6 +36,7 @@ export default class Login extends Component {
   }
   componentDidMount() {
     console.log(this.props.navigation)
+    console.log(Platform)
   }
   _sendCode() {
     this.setState({
@@ -143,7 +144,7 @@ export default class Login extends Component {
                 </View>          
               :                
                 <CountDownText
-                  style={styles.countDown}
+                  style={[styles.sendCodeBtn,styles.countDown]}
                   countType='seconds' // 计时类型：seconds / date
                   auto={true} // 自动开始
                   afterEnd={() => {
@@ -213,18 +214,22 @@ const styles = StyleSheet.create({
     height: 40,
     margin: 10,
     marginTop: 20,
-    backgroundColor: '#800002'
-  },
-  countDown: {
-    width: 140,
-    height: 40,
-    margin: 10,
-    marginTop: 20,
     backgroundColor: '#800002',
-    textAlign: 'center',
     color: '#fff',
     fontSize: 16,
-    lineHeight: 40
+    borderRadius: 8,
+    overflow: 'hidden'
+  },
+  countDown: {
+    textAlign: 'center',    
+    ...Platform.select({
+      ios: {
+        lineHeight: 40, //lineHeight在android不生效
+      },
+      android: {
+        textAlignVertical: 'center',  //此属性ios不生效
+      }
+    })
   },
   notDisplay: {
     display: 'none'

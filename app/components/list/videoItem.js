@@ -6,6 +6,7 @@ import request from '../../api/request'
 import {
   StyleSheet,
   Text,
+  Platform,
   Image,
   ImageBackground,
   TouchableHighlight,
@@ -150,8 +151,15 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     borderWidth: 1,
     backgroundColor: 'transparent',
-    lineHeight: 46,
-    textAlign: 'center'
+    textAlign: 'center',
+    ...Platform.select({
+      ios: {
+        lineHeight: 46, //lineHeight在android不生效
+      },
+      android: {
+        textAlignVertical: 'center',  //此属性ios不生效
+      }
+    })
   },
   title: {
     fontSize: 18,
