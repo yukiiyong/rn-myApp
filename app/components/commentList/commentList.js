@@ -311,11 +311,11 @@ const styles = StyleSheet.create({
     borderColor: '#666',
     borderRadius: 6,
     backgroundColor: '#fff',
-    Platform.select({
-      'ios': {
+    ...Platform.select({
+      ios: {
         lineHeight: 36
       },
-      'android': {
+      android: {
         textAlignVertical: 'center'
       }
     })

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   Image,
+  Platform,
   ImageBackground,
   TouchableHighlight,
   TouchableOpacity,
@@ -217,18 +218,17 @@ const styles = StyleSheet.create({
     height: 60,
     fontSize: 50,
     textAlign: 'center',
-    lineHeight: 60,
     borderWidth: 1,
     borderColor: '#999',
     borderRadius: 30,
     backgroundColor: 'rgba(0,0,0,0.3)',
     color: '#800002',
     overflow: 'hidden',
-    Platform.select({
-      'ios': {
-        lineHeight: 36
+    ...Platform.select({
+      ios: {
+        lineHeight: 60
       },
-      'android': {
+      android: {
         textAlignVertical: 'center'
       }
     })
